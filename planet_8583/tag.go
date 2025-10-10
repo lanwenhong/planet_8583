@@ -134,7 +134,7 @@ func (th *TagHandler) Pack(ctx context.Context, tagStru interface{}) ([]byte, er
 			}
 		default:
 			logger.Warnf(ctx, "not support")
-			return b, errros.New("not support")
+			return tagBuf, errors.New("not support")
 		}
 	}
 	return tagBuf, nil
