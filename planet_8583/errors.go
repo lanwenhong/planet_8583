@@ -7,7 +7,8 @@ const (
 	ERR_TAG          = 2
 	ERR_TAG_NOTFOUND = 3
 	ERR_DATA_TYPE    = 4
-	ERR_DEFAULT      = 5
+	ERR_DATA_LEN     = 6
+	ERR_DEFAULT      = 7
 )
 
 var ErrMap map[int]string = map[int]string{
@@ -15,6 +16,7 @@ var ErrMap map[int]string = map[int]string{
 	ERR_TAG:          "结构体tag错误",
 	ERR_TAG_NOTFOUND: "tag未找到",
 	ERR_DATA_TYPE:    "数据类型错误",
+	ERR_DATA_LEN:     "数据长度错误",
 }
 
 type ProtocolError struct {

@@ -13,7 +13,7 @@ import (
 type Tag12 struct {
 	Len       string `len:"4" idl_type:"n"` //0003
 	Tag       string `len:"2" idl_type:"an"`
-	IndiCator string `len:"2" idl_type:"an"`
+	IndiCator string `len:"1" idl_type:"an"`
 }
 
 type TagIA struct {
@@ -25,7 +25,7 @@ type TagIA struct {
 type TagIB struct {
 	Len            string `len:"4" idl_type:"n"` //0006
 	Tag            string `len:"2" idl_type:"an"`
-	MacCheckDigits string `len:"4" idl_type:"n"`
+	MacCheckDigits string `len:"4" idl_type:"an"`
 }
 
 type TagIC struct {
@@ -37,7 +37,7 @@ type TagIC struct {
 type TagID struct {
 	Len                    string `len:"4" idl_type:"n"` //0003
 	Tag                    string `len:"2" idl_type:"an"`
-	InteracCustomerPresent string `len:"1" idl_type:"n"`
+	InteracCustomerPresent string `len:"1" idl_type:"n"  padding:"0"`
 }
 
 type TagIE struct {
