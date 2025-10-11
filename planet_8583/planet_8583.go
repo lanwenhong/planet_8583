@@ -364,7 +364,6 @@ func (ph *ProtoHandler) Pack(ctx context.Context, pData *ProtoStruct) ([]byte, e
 		logger.Debugf(ctx, "try pack domain nbit: %d", nbit)
 		switch item.Kind() {
 		case reflect.String:
-			logger.Debugf(ctx, "i: %d", i)
 			s := item.Interface().(string)
 			if s == "" {
 				continue
