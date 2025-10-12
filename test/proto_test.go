@@ -2,8 +2,6 @@ package planet_8583
 
 import (
 	"context"
-	"encoding/hex"
-	"strings"
 	"testing"
 
 	"github.com/lanwenhong/lgobase/logger"
@@ -14,6 +12,7 @@ import (
 func TestPackTrack2(t *testing.T) {
 	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
 	ps := &planet_8583.ProtoStruct{
+		MsgType:    "0200",
 		TrackData2: "50100439999991007D0810120000000323701",
 	}
 
@@ -23,14 +22,16 @@ func TestPackTrack2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bcd := hex.EncodeToString(bdata)
-	logger.Debugf(ctx, "bcd: %s", bcd)
+	//bcd := hex.EncodeToString(bdata)
+	fs := planet_8583.FormatByte(ctx, bdata)
+	logger.Debugf(ctx, "bcd: %s", fs)
 }
 
 func TestPackTxamt(t *testing.T) {
 	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
 	ps := &planet_8583.ProtoStruct{
-		Txamt: "66",
+		MsgType: "0200",
+		Txamt:   "66",
 	}
 	//ph := &planet_8583.ProtoHandler{}
 	ph := planet_8583.NewProtoHandler()
@@ -38,15 +39,18 @@ func TestPackTxamt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bcd := hex.EncodeToString(bdata)
-	logger.Debugf(ctx, "bcd: %s", strings.ToUpper(bcd))
+	//bcd := hex.EncodeToString(bdata)
+	fs := planet_8583.FormatByte(ctx, bdata)
+	logger.Debugf(ctx, "bcd: %s", fs)
 }
 
 func TestRegisterD63Tag(t *testing.T) {
 	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
 	//ph := &planet_8583.ProtoHandler{}
 	ph := planet_8583.NewProtoHandler()
-	pData := &planet_8583.ProtoStruct{}
+	pData := &planet_8583.ProtoStruct{
+		MsgType: "0200",
+	}
 	pData.Domain63Tags = make(map[string][]byte)
 
 	tag12 := &planet_8583.Tag12{
@@ -128,8 +132,10 @@ func TestRegisterD63Tag(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bcd := hex.EncodeToString(bdata)
-	logger.Debugf(ctx, "bcd: %s", strings.ToUpper(bcd))
+	//bcd := hex.EncodeToString(bdata)
+
+	fs := planet_8583.FormatByte(ctx, bdata)
+	logger.Debugf(ctx, "bcd: %s", fs)
 
 }
 
