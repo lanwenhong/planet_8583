@@ -42,21 +42,22 @@ type Bitmap struct {
 
 type ProtoStruct struct {
 	CardNo         string            `bit:"2" lentype:"1" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"` //主账号
-	ProcessingCd   string            `bit:"3" lentype:"0" len:"6" paddingSrc:"N"  align:"N" padding:"" dl_type:"n"`  //交易处理码
+	ProcessingCd   string            `bit:"3" lentype:"0" len:"6" paddingSrc:"N"  align:"N" padding:"0" dl_type:"n"` //交易处理码
 	Txamt          string            `bit:"4" lentype:"0" len:"12" paddingSrc:"Y" align:"L" padding:"0" dl_type:"n"` //交易金额
-	Syssn          string            `bit:"11" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
-	CardDatetime   string            `bit:"14" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
-	PosEntryMode   string            `bit:"12" lentype:"0" len:"3" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
-	NetId          string            `bit:"24" lentype:"0" len:"3" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
-	PosCondCd      string            `bit:"25" lentype:"0" len:"2" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
+	Syssn          string            `bit:"11" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
+	CardDatetime   string            `bit:"14" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
+	PosEntryMode   string            `bit:"22" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
+	NetId          string            `bit:"24" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
+	PosCondCd      string            `bit:"25" lentype:"0" len:"2" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	TrackData2     string            `bit:"35" lentype:"1" len:"37" paddingSrc:"N" align:"R" padding:"F" dl_type:"n"` //2磁道
-	Tid            string            `bit:"41" lentype:"0" len:"8" paddingSrc:"N" align:"N"  padding:"" dl_type:"n"`
-	MchntId        string            `bit:"42" lentype:"0" len:"15" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
+	Tid            string            `bit:"41" lentype:"0" len:"8" paddingSrc:"N" align:"N"  padding:"0" dl_type:"an"`
+	MchntId        string            `bit:"42" lentype:"0" len:"15" paddingSrc:"Y" align:"R" padding:" " dl_type:"an"`
 	CurrencyCd     string            `bit:"49" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
-	Pin            string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"" dl_type:"n"`
-	Domain63       []byte            `bit:"63" lentype:"2" len:"160" paddingSrc:"N" align:"N" padding:"" dl_type:"complex" tags:"12,IA,IB,IC,ID,IE,IF,IG,IH,IL"`
+	Pin            string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
+	Domain63       []byte            `bit:"63" lentype:"2" len:"160" paddingSrc:"N" align:"N" padding:"0" dl_type:"complex" tags:"12,IA,IB,IC,ID,IE,IF,IG,IH,IL"`
 	Domain63Tags   map[string][]byte //tags
 	Domain64TagKey []string
+	MsgType        string
 }
 
 func NewBitmap() *Bitmap {
@@ -116,6 +117,10 @@ func (b *Bitmap) HasDomain(ctx context.Context, domain int) bool {
 }
 
 type ProtoHandler struct {
+	Tbuf    []byte //msg type + bitmap + data stream
+	MsgType []byte
+	Bit     *Bitmap
+	Bdata   []byte //data stream
 }
 
 func (ph *ProtoHandler) getTagInt(ctx context.Context, tv reflect.StructField, tagName string) (int, error) {
@@ -164,6 +169,10 @@ func (ph *ProtoHandler) packLen(ctx context.Context, slen int, tv reflect.Struct
 		err = NewProtocolError(ERR_TAG)
 	}
 	return bcd, err
+}
+
+func (ph *ProtoHandler) packANType(ctx context.Context, s string, tv reflect.StructField) ([]byte, error) {
+	return []byte(s), nil
 }
 
 func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.StructField) ([]byte, error) {
@@ -283,7 +292,6 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 		for i := 0; i < dlen-slen; i++ {
 			builder.WriteString(paddingC)
 		}
-		builder.WriteString(s)
 		ts = builder.String()
 	default:
 		logger.Warnf(ctx, "not found tagAlign")
@@ -313,7 +321,12 @@ func (ph *ProtoHandler) packDomainStr(ctx context.Context, s string, tv reflect.
 	switch dlt {
 	case "n":
 		dBuf, err = ph.packNType(ctx, vs, tv)
+	case "an":
+		dBuf, _ = ph.packANType(ctx, vs, tv)
 	}
+
+	fs := FormatByte(ctx, dBuf)
+	logger.Debugf(ctx, "format pack str: %s", fs)
 	return dBuf, nil
 }
 
@@ -325,6 +338,8 @@ func (ph *ProtoHandler) packDomainSlice(ctx context.Context, s []byte, tv reflec
 	b = append(b, zlen...)
 	b = append(b, s...)
 
+	fs := FormatByte(ctx, b)
+	logger.Debugf(ctx, "format pack slice: %s", fs)
 	return b, nil
 }
 
@@ -342,10 +357,31 @@ func (ph *ProtoHandler) RegisterD63Tag(ctx context.Context, tag string, pData *P
 
 }
 
-func (ph *ProtoHandler) Pack(ctx context.Context, pData *ProtoStruct) ([]byte, error) {
-	bdata := []byte{}
-	bitmap := NewBitmap()
+func (ph *ProtoHandler) PackMac(ctx context.Context, mac string) error {
+	mdata, err := hex.DecodeString(mac)
+	if err != nil {
+		logger.Warnf(ctx, "mac format err: %s", err.Error())
+		return NewProtocolError(ERR_DEFAULT)
+	}
+	ph.Bit.Packbit(ctx, 64)
+	ph.Bdata = append(ph.Bdata, mdata...)
+	return nil
+}
 
+func (ph *ProtoHandler) PackStru(ctx context.Context, pData *ProtoStruct) ([]byte, error) {
+	bitmap := ph.Bit
+	bdata := []byte{}
+
+	var err error
+	//pack msg type
+	if len(pData.MsgType) != 4 {
+		return bdata, NewProtocolError(ERR_DATA_LEN)
+	}
+	ph.MsgType, err = hex.DecodeString(pData.MsgType)
+	if err != nil {
+		logger.Warnf(ctx, "err: %s", err.Error())
+		return bdata, err
+	}
 	v_stru := reflect.ValueOf(pData).Elem()
 	count := v_stru.NumField()
 	logger.Debugf(ctx, "count: %d", count)
@@ -390,5 +426,19 @@ func (ph *ProtoHandler) Pack(ctx context.Context, pData *ProtoStruct) ([]byte, e
 			bitmap.Packbit(ctx, nbit)
 		}
 	}
+	ph.Bdata = bdata
 	return bdata, nil
+}
+
+func (ph *ProtoHandler) Pack(ctx context.Context) {
+	ph.Tbuf = append(ph.Tbuf, ph.MsgType...)
+	ph.Tbuf = append(ph.Tbuf, ph.Bit.Data...)
+	ph.Tbuf = append(ph.Tbuf, ph.Bdata...)
+}
+
+func NewProtoHandler() *ProtoHandler {
+	ph := &ProtoHandler{
+		Bit: NewBitmap(),
+	}
+	return ph
 }
