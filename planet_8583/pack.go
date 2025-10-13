@@ -12,7 +12,7 @@ import (
 	"github.com/lanwenhong/lgobase/logger"
 )
 
-const (
+/*const (
 	TAG_BIT        = "bit"
 	TAG_LENTYPE    = "lentype"
 	TAG_LEN        = "len"
@@ -34,13 +34,13 @@ const (
 	FIXEDLENGTH  = iota //固定长度
 	VARIABLELEN2        //2位变长
 	VARIABLELEN3        //3位变长
-)
+)*/
 
-type Bitmap struct {
+/*type Bitmap struct {
 	Data []byte
-}
+}*/
 
-type ProtoStruct struct {
+/*type ProtoStruct struct {
 	CardNo                   string            `bit:"2" lentype:"1" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"` //主账号
 	ProcessingCd             string            `bit:"3" lentype:"0" len:"6" paddingSrc:"N"  align:"N" padding:"0" dl_type:"n"` //交易处理码
 	Txamt                    string            `bit:"4" lentype:"0" len:"12" paddingSrc:"Y" align:"L" padding:"0" dl_type:"n"` //交易金额
@@ -62,16 +62,16 @@ type ProtoStruct struct {
 	Domain63Tags             map[string][]byte //tags
 	Domain64TagKey           []string
 	MsgType                  string
-}
+}*/
 
-func NewBitmap() *Bitmap {
+/*func NewBitmap() *Bitmap {
 	b := &Bitmap{}
 	b.Data = make([]byte, 8)
 
 	return b
-}
+}*/
 
-func (b *Bitmap) Packbit(ctx context.Context, num int) error {
+/*func (b *Bitmap) Packbit(ctx context.Context, num int) error {
 	if num > 64 {
 		logger.Warnf(ctx, "num %d not support", num)
 		return errors.New(fmt.Sprintf("num %d not support", num))
@@ -118,7 +118,7 @@ func (b *Bitmap) HasDomain(ctx context.Context, domain int) bool {
 		return true
 	}
 	return false
-}
+}*/
 
 type ProtoHandler struct {
 	Tbuf    []byte //msg type + bitmap + data stream
