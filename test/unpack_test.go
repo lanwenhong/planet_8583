@@ -33,7 +33,7 @@ func TestUnapckTrack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger.Debugf(ctx, "trace2: %s", ups.TrackData2)
+	logger.Debugf(ctx, "track2: %s", ups.TrackData2)
 	//bcd := hex.EncodeToString(bdata)
 	//fs := planet_8583.FormatByte(ctx, bdata)
 
