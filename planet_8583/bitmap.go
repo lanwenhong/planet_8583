@@ -50,6 +50,11 @@ func (b *Bitmap) SetBitMap(ctx context.Context, bitmap string) error {
 	return err
 }
 
+func (b *Bitmap) SetBitMapByte(ctx context.Context, bitmap []byte) error {
+	b.Data = bitmap
+	return nil
+}
+
 func (b *Bitmap) HasDomain(ctx context.Context, domain int) bool {
 	index, pos := domain/8, (8 - domain%8)
 	if domain%8 == 0 && index != 0 {
@@ -61,7 +66,7 @@ func (b *Bitmap) HasDomain(ctx context.Context, domain int) bool {
 	logger.Debugf(ctx, "check byte %02X", b.Data[index])
 
 	bit := (b.Data[index] >> pos) & 0x01
-	logger.Debugf(ctx, "bit: %d", bit)
+	logger.Debugf(ctx, "domain: %d bit: %d", domain, bit)
 
 	if bit == 1 {
 		return true

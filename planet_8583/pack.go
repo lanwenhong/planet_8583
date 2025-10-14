@@ -120,12 +120,12 @@ func (b *Bitmap) HasDomain(ctx context.Context, domain int) bool {
 	return false
 }*/
 
-type ProtoHandler struct {
+/*type ProtoHandler struct {
 	Tbuf    []byte //msg type + bitmap + data stream
 	MsgType []byte
 	Bit     *Bitmap
 	Bdata   []byte //data stream
-}
+}*/
 
 func (ph *ProtoHandler) getTagInt(ctx context.Context, tv reflect.StructField, tagName string) (int, error) {
 	v := tv.Tag.Get(tagName)
