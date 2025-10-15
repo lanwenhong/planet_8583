@@ -154,6 +154,7 @@ func TestUnpackDomain63(t *testing.T) {
 	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
 	logger.Debugf(ctx, "bcd: %s", fs)
 
+	//unpack
 	uph := planet_8583.NewProtoHandler()
 	ups := planet_8583.ProtoStruct{}
 	err = uph.Unpack(ctx, ph.Tbuf, &ups)
@@ -167,4 +168,14 @@ func TestUnpackDomain63(t *testing.T) {
 		fv := planet_8583.FormatByte(ctx, v)
 		logger.Debugf(ctx, "tag: %s data: %s", k, fv)
 	}
+
+	//unparse tag12
+	uTag12 := &planet_8583.Tag12{}
+	uth := &planet_8583.TagHandler{}
+	tagData := ups.Domain63Tags["12"]
+	err = uth.Unpack(ctx, "12", uTag12, tagData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger.Debugf(ctx, "%v", uTag12)
 }

@@ -139,3 +139,87 @@ func (th *TagHandler) Pack(ctx context.Context, tagStru interface{}) ([]byte, er
 	}
 	return tagBuf, nil
 }
+
+func (th *TagHandler) unPackTagData(ctx context.Context, tagData []byte, dlen int, dlenType string,
+	v reflect.Value, start *int, unparsed *int) error {
+	b := []byte{}
+	//slen := len(s)
+	switch dlenType {
+	case "n":
+		pdlen := dlen + dlen%2
+		pdlen = pdlen / 2
+
+		if *unparsed < pdlen {
+			logger.Warnf(ctx, "unparsed: %d < pdlen: %d", *unparsed, pdlen)
+			return NewProtocolError(ERR_DATA_LEN)
+		}
+		b = tagData[*start : *start+pdlen]
+		sb := hex.EncodeToString(b)
+		v.SetString(sb)
+
+		*start += pdlen
+		*unparsed -= pdlen
+	case "an":
+		if *unparsed < dlen {
+			logger.Warnf(ctx, "unparsed: %d < dlen: %d", *unparsed, dlen)
+			return NewProtocolError(ERR_DATA_LEN)
+		}
+		b = tagData[*start : *start+dlen]
+		v.SetString(string(b))
+		*start += dlen
+		*unparsed -= dlen
+	default:
+		logger.Warnf(ctx, "not support")
+		return errors.New("not support")
+	}
+	return nil
+}
+
+func (th *TagHandler) Unpack(ctx context.Context, tagName string, tagStru interface{}, tagData []byte) error {
+	var err error = nil
+	v_stru := reflect.ValueOf(tagStru).Elem()
+	count := v_stru.NumField()
+	logger.Debugf(ctx, "count: %d", count)
+
+	start := 0
+	unparsed := len(tagData)
+	if unparsed < 4 {
+		logger.Warnf(ctx, "data format err unparsed: %d < 4", unparsed)
+		return NewProtocolError(ERR_DATA_LEN)
+	}
+	tagLen := 0
+	for i := 0; i < count; i++ {
+		item := v_stru.Field(i)
+		if i == 0 {
+			blen := tagData[start : start+2]
+			xlen := hex.EncodeToString(blen)
+			tagLen, err = strconv.Atoi(xlen)
+			if err != nil {
+				logger.Warnf(ctx, "parse err: %s", err.Error())
+				return err
+			}
+			logger.Debugf(ctx, "tagLen: %d", tagLen)
+			item.SetString(xlen)
+			start += 2
+			unparsed -= 2
+		} else if i == 1 {
+			tagName := string(tagData[start : start+2])
+			item.SetString(tagName)
+			start += 2
+			unparsed -= 2
+		} else {
+			t_item := v_stru.Type().Field(i)
+			dlen := th.getTagLen(t_item)
+			lenType := th.getTagLenType(ctx, t_item)
+			err = th.unPackTagData(ctx, tagData, dlen, lenType, item, &start, &unparsed)
+			if err != nil {
+				return err
+			}
+		}
+		if start == len(tagData) {
+			logger.Debugf(ctx, "max len reach")
+			break
+		}
+	}
+	return nil
+}
