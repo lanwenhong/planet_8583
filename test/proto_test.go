@@ -51,7 +51,7 @@ func TestRegisterD63Tag(t *testing.T) {
 	pData := &planet_8583.ProtoStruct{
 		MsgType: "0200",
 	}
-	pData.Domain63Tags = make(map[string][]byte)
+	//pData.Domain63Tags = make(map[string][]byte)
 
 	tag12 := &planet_8583.Tag12{
 		Len:       "0003",

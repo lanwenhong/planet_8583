@@ -355,6 +355,9 @@ func (ph *ProtoHandler) RegisterD63Tag(ctx context.Context, tag string, pData *P
 		return err
 	}
 	pData.Domain64TagKey = append(pData.Domain64TagKey, tag)
+	if pData.Domain63Tags == nil {
+		pData.Domain63Tags = make(map[string][]byte)
+	}
 	pData.Domain63Tags[tag] = b
 	pData.Domain63 = append(pData.Domain63, b...)
 	return nil
