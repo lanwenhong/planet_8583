@@ -9,7 +9,8 @@ const (
 	ERR_DATA_TYPE    = 4
 	ERR_DATA_LEN     = 6
 	ERR_MAC_FORMAT   = 7
-	ERR_DEFAULT      = 8
+	ERR_TAG63        = 8
+	ERR_DEFAULT      = 9
 )
 
 var ErrMap map[int]string = map[int]string{
@@ -19,6 +20,7 @@ var ErrMap map[int]string = map[int]string{
 	ERR_DATA_TYPE:    "数据类型错误",
 	ERR_DATA_LEN:     "数据长度错误",
 	ERR_MAC_FORMAT:   "mac格式错误",
+	ERR_TAG63:        "63域tag错误",
 }
 
 type ProtocolError struct {

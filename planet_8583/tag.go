@@ -13,61 +13,115 @@ import (
 type Tag12 struct {
 	Len       string `len:"4" idl_type:"n"` //0003
 	Tag       string `len:"2" idl_type:"an"`
-	IndiCator string `len:"1" idl_type:"an"`
+	IndiCator string `lentype:"0" len:"1" idl_type:"an"`
 }
 
 type TagIA struct {
 	Len          string `len:"4" idl_type:"n"` //0004
 	Tag          string `len:"2" idl_type:"an"`
-	HostKeyIndex string `len:"3" idl_type:"n" padding:"0"`
+	HostKeyIndex string `lentype:"0" len:"3" idl_type:"n" padding:"0"`
 }
 
 type TagIB struct {
 	Len            string `len:"4" idl_type:"n"` //0006
 	Tag            string `len:"2" idl_type:"an"`
-	MacCheckDigits string `len:"4" idl_type:"an"`
+	MacCheckDigits string `lentype:"0" len:"4" idl_type:"an"`
 }
 
 type TagIC struct {
 	Len                  string `len:"4" idl_type:"n"` //0003
 	Tag                  string `len:"2" idl_type:"an"`
-	InteracTerminalClass string `len:"2" idl_type:"n"`
+	InteracTerminalClass string `lentype:"0" len:"2" idl_type:"n"`
 }
 
 type TagID struct {
 	Len                    string `len:"4" idl_type:"n"` //0003
 	Tag                    string `len:"2" idl_type:"an"`
-	InteracCustomerPresent string `len:"1" idl_type:"n"  padding:"0"`
+	InteracCustomerPresent string `lentype:"0" len:"1" idl_type:"n"  padding:"0"`
 }
 
 type TagIE struct {
 	Len                string `len:"4" idl_type:"n"` //0003
 	Tag                string `len:"2" idl_type:"an"`
-	InteracCardPresent string `len:"1" idl_type:"n"`
+	InteracCardPresent string `lentype:"0" len:"1" idl_type:"n"`
 }
 
 type TagIF struct {
 	Len                          string `len:"4" idl_type:"n"` //0003
 	Tag                          string `len:"2" idl_type:"an"`
-	InteracCardCaptureCapability string `len:"1" idl_type:"n"`
+	InteracCardCaptureCapability string `lentype:"0" len:"1" idl_type:"n"`
 }
 
 type TagIG struct {
 	Len               string `len:"4" idl_type:"n"` //0003
 	Tag               string `len:"2" idl_type:"an"`
-	BalanceinResponse string `len:"1" idl_type:"n"`
+	BalanceinResponse string `lentype:"0" len:"1" idl_type:"n"`
 }
 
 type TagIH struct {
 	Len             string `len:"4" idl_type:"n"` //0003
 	Tag             string `len:"2" idl_type:"an"`
-	InteracSecurity string `len:"1" idl_type:"n"`
+	InteracSecurity string `lentype:"0" len:"1" idl_type:"n"`
 }
 
 type TagIL struct {
 	Len             string `len:"4" idl_type:"n"` //0010
 	Tag             string `len:"2" idl_type:"an"`
-	InteracSecurity string `len:"16" idl_type:"n"`
+	InteracSecurity string `lentype:"0" len:"16" idl_type:"n"`
+}
+
+type TagIM struct {
+	Len            string `len:"4" idl_type:"n"` //0006
+	Tag            string `len:"2" idl_type:"an"`
+	PinCheckDigits string `lentype:"0" len:"4" idl_type:"an"`
+}
+
+type TagIN struct {
+	Len            string `len:"4" idl_type:"n"` //0006
+	Tag            string `len:"2" idl_type:"an"`
+	KMECheckDigits string `lentype:"0" len:"4" idl_type:"an"`
+}
+
+type TagKM8 struct {
+	Len    string `len:"4" idl_type:"n"` //0010
+	Tag    string `len:"2" idl_type:"an"`
+	MacKey string `lentype:"0" len:"16" idl_type:"n"`
+}
+
+type TagKP8 struct {
+	Len              string `len:"4" idl_type:"n"` //0010
+	Tag              string `len:"2" idl_type:"an"`
+	PINEncryptionKey string `lentype:"0" len:"16" idl_type:"n"`
+}
+
+type TagPK struct {
+	Len              string `len:"4" idl_type:"n"` //00LL
+	Tag              string `len:"2" idl_type:"an"`
+	PINEncryptionKey string `lentype:"0" len:"160" idl_type:"n"`
+}
+
+type TagDK struct {
+	Len                  string `len:"4" idl_type:"n"` //00LL
+	Tag                  string `len:"2" idl_type:"an"`
+	MessageEncryptionKey string `lentype:"0" len:"160" idl_type:"n"`
+}
+
+type TagMK struct {
+	Len                          string `len:"4" idl_type:"n"` //00LL
+	Tag                          string `len:"2" idl_type:"an"`
+	MessageAuthenticationCodeKey string `lentype:"0" len:"160" idl_type:"n"`
+}
+
+type TagKT struct {
+	Len                      string `len:"4" idl_type:"n"` //0003
+	Tag                      string `len:"2" idl_type:"an"`
+	KeyExchangeMechanismType string `lentype:"0" len:"1" idl_type:"an"`
+}
+
+type TagPP struct {
+	Len                   string `len:"4" idl_type:"n"` //0018
+	Tag                   string `len:"2" idl_type:"an"`
+	PlanetPaymentPassword string `lentype:"0" len:"32" idl_type:"n"`
 }
 
 type TagHandler struct {
@@ -140,25 +194,37 @@ func (th *TagHandler) Pack(ctx context.Context, tagStru interface{}) ([]byte, er
 	return tagBuf, nil
 }
 
+func (th *TagHandler) unpackNType(ctx context.Context, b []byte, v reflect.Value, t reflect.StructField, start *int, unparsed *int) error {
+	logger.Debugf(ctx, "b: %X", b)
+	uph := NewProtoHandler()
+	return uph.UnpackNType(ctx, b, v, t, start, unparsed)
+}
+
 func (th *TagHandler) unPackTagData(ctx context.Context, tagData []byte, dlen int, dlenType string,
-	v reflect.Value, start *int, unparsed *int) error {
+	v reflect.Value, t reflect.StructField, start *int, unparsed *int) error {
 	b := []byte{}
 	//slen := len(s)
 	switch dlenType {
 	case "n":
-		pdlen := dlen + dlen%2
+		/*pdlen := dlen + dlen%2
 		pdlen = pdlen / 2
 
+		logger.Debugf(ctx, "dlen: %d pdlen: %d", dlen, pdlen)
 		if *unparsed < pdlen {
 			logger.Warnf(ctx, "unparsed: %d < pdlen: %d", *unparsed, pdlen)
 			return NewProtocolError(ERR_DATA_LEN)
 		}
 		b = tagData[*start : *start+pdlen]
 		sb := hex.EncodeToString(b)
-		v.SetString(sb)
+		bStart := dlen % 2
+		bEnd := dlen%2 + dlen
+		//v.SetString(sb[pdlen-dlen:])
+		v.SetString(strings.ToUpper(sb[bStart:bEnd]))
 
 		*start += pdlen
-		*unparsed -= pdlen
+		*unparsed -= pdlen*/
+		return th.unpackNType(ctx, tagData, v, t, start, unparsed)
+
 	case "an":
 		if *unparsed < dlen {
 			logger.Warnf(ctx, "unparsed: %d < dlen: %d", *unparsed, dlen)
@@ -190,7 +256,7 @@ func (th *TagHandler) Unpack(ctx context.Context, tagName string, tagStru interf
 	tagLen := 0
 	for i := 0; i < count; i++ {
 		item := v_stru.Field(i)
-		if i == 0 {
+		if i == 0 { // len
 			blen := tagData[start : start+2]
 			xlen := hex.EncodeToString(blen)
 			tagLen, err = strconv.Atoi(xlen)
@@ -202,16 +268,16 @@ func (th *TagHandler) Unpack(ctx context.Context, tagName string, tagStru interf
 			item.SetString(xlen)
 			start += 2
 			unparsed -= 2
-		} else if i == 1 {
+		} else if i == 1 { //tag name
 			tagName := string(tagData[start : start+2])
 			item.SetString(tagName)
 			start += 2
 			unparsed -= 2
-		} else {
+		} else { // tag data
 			t_item := v_stru.Type().Field(i)
 			dlen := th.getTagLen(t_item)
 			lenType := th.getTagLenType(ctx, t_item)
-			err = th.unPackTagData(ctx, tagData, dlen, lenType, item, &start, &unparsed)
+			err = th.unPackTagData(ctx, tagData, dlen, lenType, item, t_item, &start, &unparsed)
 			if err != nil {
 				return err
 			}
@@ -222,4 +288,12 @@ func (th *TagHandler) Unpack(ctx context.Context, tagName string, tagStru interf
 		}
 	}
 	return nil
+}
+
+func (th *TagHandler) UnpackFromPStru(ctx context.Context, tagName string, tagStru interface{}, pdata *ProtoStruct) error {
+	if b, ok := pdata.Domain63Tags[tagName]; ok {
+		return th.Unpack(ctx, tagName, tagStru, b)
+	}
+	logger.Warnf(ctx, "not found tag: %s", tagName)
+	return NewProtocolError(ERR_TAG63)
 }

@@ -11,9 +11,10 @@ import (
 	"github.com/lanwenhong/lgobase/logger"
 )
 
-func (ph *ProtoHandler) unpackNType(ctx context.Context, b []byte, v reflect.Value, t reflect.StructField, start *int, unparsed *int) error {
+func (ph *ProtoHandler) UnpackNType(ctx context.Context, b []byte, v reflect.Value, t reflect.StructField, start *int, unparsed *int) error {
 	var dlen int //当前域名的数据长度
 	var rlen int
+	var bStart, bEnd int
 	lenType, err := ph.getTagInt(ctx, t, TAG_LENTYPE)
 	if err != nil {
 		logger.Warnf(ctx, "k: %s not found", TAG_LENTYPE)
@@ -26,9 +27,12 @@ func (ph *ProtoHandler) unpackNType(ctx context.Context, b []byte, v reflect.Val
 			logger.Warnf(ctx, "err: %s", err.Error())
 			return err
 		}
-		logger.Debugf(ctx, "dlen: %d", clen)
+		rlen = clen
 		dlen = clen/2 + clen%2
-		rlen = dlen
+		logger.Debugf(ctx, "dlen: %d", dlen)
+		bStart = clen % 2
+		bEnd = clen%2 + clen
+		logger.Debugf(ctx, "bStart: %d bEnd: %d", bStart, bEnd)
 	case VARIABLELEN2:
 		//2 byte
 		if *unparsed < 1 {
@@ -49,6 +53,9 @@ func (ph *ProtoHandler) unpackNType(ctx context.Context, b []byte, v reflect.Val
 		dlen = dlen/2 + dlen%2
 		*start += 1
 		*unparsed -= 1
+		bStart = 0
+		bEnd = rlen
+
 	case VARIABLELEN3:
 		if *unparsed < 2 {
 			logger.Warnf(ctx, "unparsed len err: %d", *unparsed)
@@ -67,6 +74,8 @@ func (ph *ProtoHandler) unpackNType(ctx context.Context, b []byte, v reflect.Val
 		dlen = dlen/2 + dlen%2
 		*start += 2
 		*unparsed -= 2
+		bStart = 0
+		bEnd = rlen
 	}
 
 	logger.Debugf(ctx, "unpack dlen: %d rlen: %d", dlen, rlen)
@@ -75,11 +84,16 @@ func (ph *ProtoHandler) unpackNType(ctx context.Context, b []byte, v reflect.Val
 		return NewProtocolError(ERR_DATA_LEN)
 	}
 	//unpack data
+	logger.Debugf(ctx, "start: %d end: %d", *start, *start+dlen)
 	udata := b[*start : *start+dlen]
 	bcdData := hex.EncodeToString(udata)
-	rdata := bcdData[0:rlen]
+	//rdata := bcdData[0:rlen]
+	logger.Debugf(ctx, "bStart: %d bEnd: %d", bStart, bEnd)
+	rdata := bcdData[bStart:bEnd]
 	logger.Debugf(ctx, "rdata: %s", rdata)
 	v.SetString(strings.ToUpper(rdata))
+	*start += dlen
+	*unparsed -= dlen
 	return nil
 }
 
@@ -123,7 +137,7 @@ func (ph *ProtoHandler) unpackDomainStr(ctx context.Context, b []byte, v reflect
 	}
 	switch dlt {
 	case "n":
-		return ph.unpackNType(ctx, b, v, t, start, unparsed)
+		return ph.UnpackNType(ctx, b, v, t, start, unparsed)
 	case "an":
 		return ph.unpackANType(ctx, b, v, t, start, unparsed)
 
