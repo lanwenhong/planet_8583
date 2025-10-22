@@ -69,7 +69,7 @@ type ProtoStruct struct {
 	TrackData2               string            `bit:"35" lentype:"1" len:"37" paddingSrc:"N" align:"R" padding:"F" dl_type:"n"` //2磁道
 	Domain36                 string            `bit:"36" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	RetrievalReferenceNumber string            `bit:"37" lentype:"0" len:"12" paddingSrc:"N" align:"N"  padding:"0" dl_type:"an"`
-	Domain38                 string            `bit:"38" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	AuthorizationIDResponse  string            `bit:"38" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"F" dl_type:"an"`
 	ResponseCode             string            `bit:"39" lentype:"0" len:"2" paddingSrc:"N" align:"N"  padding:"0" dl_type:"an"`
 	Domain40                 string            `bit:"40" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Tid                      string            `bit:"41" lentype:"0" len:"8" paddingSrc:"N" align:"N"  padding:"0" dl_type:"an"`

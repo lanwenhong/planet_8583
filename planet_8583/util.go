@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/hex"
 	"strings"
+
+	"github.com/lanwenhong/lgobase/logger"
 )
 
 func FormatByte(ctx context.Context, data []byte) string {
@@ -15,6 +17,6 @@ func FormatByte(ctx context.Context, data []byte) string {
 			fb = append(fb, " "...)
 		}
 	}
-	//logger.Debugf(ctx, "bcd: %s", strings.ToUpper(string(fb)))
+	logger.Debugf(ctx, "bcd: %s", strings.ToUpper(bcd))
 	return strings.ToUpper(string(fb))
 }

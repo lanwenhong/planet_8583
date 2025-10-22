@@ -85,6 +85,10 @@ func (ph *ProtoHandler) UnpackNType(ctx context.Context, b []byte, v reflect.Val
 	}
 	//unpack data
 	logger.Debugf(ctx, "start: %d end: %d", *start, *start+dlen)
+	if dlen > len(b[*start:]) {
+		logger.Warnf(ctx, "data length err: dlen: %d > unparsed: %d", dlen, len(b[*start:]))
+		return NewProtocolError(ERR_DATA_LEN)
+	}
 	udata := b[*start : *start+dlen]
 	bcdData := hex.EncodeToString(udata)
 	//rdata := bcdData[0:rlen]
@@ -104,6 +108,10 @@ func (ph *ProtoHandler) unpackANType(ctx context.Context, b []byte, v reflect.Va
 		return err
 	}
 	logger.Debugf(ctx, "clen: %d", clen)
+	if clen > len(b[*start:]) {
+		logger.Warnf(ctx, "len err clen: %d > unparsed: %d", clen, len(b[*start:]))
+		return NewProtocolError(ERR_DATA_LEN)
+	}
 	anData := string(b[*start : *start+clen])
 	paddingSrc, _ := ph.getTagStr(ctx, t, TAG_PADDINGSRC)
 	align, _ := ph.getTagStr(ctx, t, TAG_ALIGN)

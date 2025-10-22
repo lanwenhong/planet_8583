@@ -148,13 +148,13 @@ func TestFinancialTrasReq(t *testing.T) {
 		MsgType:      "0200",
 		ProcessingCd: "002000",
 		Txamt:        "555",
-		Syssn:        "000027",
+		Syssn:        "000927",
 		PosEntryMode: "021",
 		NetId:        "226",
 		PosCondCd:    "00",
 		TrackData2:   "50100439999991007D0810120000000323701",
 		Tid:          "11411111",
-		MchntId:      "99988802",
+		MchntId:      "188000344333",
 		CurrencyCd:   "124",
 		Pin:          "AA17EAB7BF18034B",
 	}
@@ -258,9 +258,9 @@ func TestKeyExchangeReq(t *testing.T) {
 	pData := &planet_8583.ProtoStruct{
 		MsgType:      "0800",
 		ProcessingCd: "920000",
-		Syssn:        "000481",
+		Syssn:        "000900",
 		Tid:          "11411111",
-		MchntId:      "99988802",
+		MchntId:      "188000344333",
 		NetId:        "226",
 	}
 	tagIL := &planet_8583.TagIL{
