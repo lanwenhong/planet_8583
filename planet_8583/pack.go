@@ -51,7 +51,7 @@ func (ph *ProtoHandler) packLen(ctx context.Context, slen int, tv reflect.Struct
 		bcdLen := fmt.Sprintf("%02d", slen)
 		bcd, err = hex.DecodeString(bcdLen)
 	case VARIABLELEN3:
-		bcdLen := fmt.Sprintf("%04d", slen)
+		bcdLen := fmt.Sprintf("%04d", slen/2)
 		bcd, err = hex.DecodeString(bcdLen)
 	default:
 		logger.Warnf(ctx, "lenType: %d not support", lenType)

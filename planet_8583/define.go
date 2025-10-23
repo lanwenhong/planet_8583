@@ -86,7 +86,7 @@ type ProtoStruct struct {
 	Pin                      string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain53                 string            `bit:"53" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain54                 string            `bit:"54" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	ICCSystemRelatedData     string            `bit:"55" lentype:"1" len:"19" paddingSrc:"N" align:"R" padding:"F" dl_type:"n"` // iccdata
+	ICCSystemRelatedData     string            `bit:"55" lentype:"2" len:"19" paddingSrc:"N" align:"R" padding:"F" dl_type:"n"` // iccdata
 	Domain56                 string            `bit:"56" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain57                 string            `bit:"57" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain58                 string            `bit:"58" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
