@@ -22,7 +22,7 @@ const (
 	DATA_LEN_TYPE_AN     = "an"
 	DATA_LEN_TYPE_Z      = "z"
 	DATA_LEN_TYPE_ANS    = "ans"
-	DATA_LEN_TYpE_SHADED = "shaded"
+	DATA_LEN_TYPE_SHADED = "shaded"
 )
 
 const (
@@ -97,7 +97,7 @@ type ProtoStruct struct {
 	Domain63                 []byte            `bit:"63" lentype:"2" len:"160" paddingSrc:"N" align:"N" padding:"0" dl_type:"b" tags:"12,IA,IB,IC,ID,IE,IF,IG,IH,IL"`
 	Domain64                 string            `bit:"64" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain63Tags             map[string][]byte //tags
-	Domain64TagKey           []string
+	Domain63TagKey           []string
 	MsgType                  string
 }
 
