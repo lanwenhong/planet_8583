@@ -54,7 +54,7 @@ type ProtoStruct struct {
 	Domain20                 string            `bit:"20" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain21                 string            `bit:"21" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	PosEntryMode             string            `bit:"22" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
-	Domain23                 string            `bit:"23" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	Cardsequencenumber       string            `bit:"23" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
 	NetId                    string            `bit:"24" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
 	PosCondCd                string            `bit:"25" lentype:"0" len:"2" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain26                 string            `bit:"26" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
@@ -86,7 +86,7 @@ type ProtoStruct struct {
 	Pin                      string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain53                 string            `bit:"53" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain54                 string            `bit:"54" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain55                 string            `bit:"55" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	ICCSystemRelatedData     string            `bit:"55" lentype:"1" len:"19" paddingSrc:"N" align:"R" padding:"F" dl_type:"n"` // iccdata
 	Domain56                 string            `bit:"56" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain57                 string            `bit:"57" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain58                 string            `bit:"58" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`

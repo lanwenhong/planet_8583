@@ -302,6 +302,10 @@ func (ph *ProtoHandler) PackStru(ctx context.Context, pData *ProtoStruct) ([]byt
 				logger.Warnf(ctx, "err: %s", err.Error())
 				return bdata, err
 			}
+			/*if nbit == 23 {
+				testBcd := "DE55"
+				b, _ = hex.DecodeString(testBcd)
+			}*/
 			bdata = append(bdata, b...)
 			bitmap.Packbit(ctx, nbit)
 		case reflect.Slice:
