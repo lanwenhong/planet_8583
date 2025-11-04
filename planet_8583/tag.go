@@ -124,6 +124,12 @@ type TagPP struct {
 	PlanetPaymentPassword string `lentype:"0" len:"32" idl_type:"n"`
 }
 
+type TagTC struct {
+	Len                       string `len:"4" idl_type:"n"`  //0003
+	Tag                       string `len:"2" idl_type:"an"` //TC
+	TerminalEntryCapabilities string `lentype:"0" len:"1" idl_type:"an"`
+}
+
 type TagHandler struct {
 }
 
