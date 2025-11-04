@@ -1,0 +1,8 @@
+__pycache__/
+*.prof
+*.test
+*.swp
+cover.out
+cover-*.out
+/.idea
+*.iml

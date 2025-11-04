@@ -6,7 +6,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
-
+	
 	"github.com/lanwenhong/lgobase/logger"
 )
 
@@ -130,6 +130,12 @@ type TagTC struct {
 	TerminalEntryCapabilities string `lentype:"0" len:"1" idl_type:"an"`
 }
 
+type TagFA struct {
+	Len                string `len:"4" idl_type:"n"` //0018
+	Tag                string `len:"2" idl_type:"an"`
+	FinalAuthIndicator string `lentype:"0" len:"1" idl_type:"an"`
+}
+
 type TagHandler struct {
 }
 
@@ -137,7 +143,7 @@ func (th *TagHandler) getTagLen(tv reflect.StructField) int {
 	slen := tv.Tag.Get("len")
 	dlen, _ := strconv.Atoi(slen)
 	return dlen
-
+	
 }
 
 func (th *TagHandler) getTagLenType(ctx context.Context, tv reflect.StructField) string {
@@ -176,9 +182,9 @@ func (th *TagHandler) Pack(ctx context.Context, tagStru interface{}) ([]byte, er
 	v_stru := reflect.ValueOf(tagStru).Elem()
 	count := v_stru.NumField()
 	logger.Debugf(ctx, "count: %d", count)
-
+	
 	var tagBuf = []byte{}
-
+	
 	for i := 0; i < count; i++ {
 		item := v_stru.Field(i)
 		t_item := v_stru.Type().Field(i)
@@ -214,7 +220,7 @@ func (th *TagHandler) unPackTagData(ctx context.Context, tagData []byte, dlen in
 	case "n":
 		/*pdlen := dlen + dlen%2
 		pdlen = pdlen / 2
-
+		
 		logger.Debugf(ctx, "dlen: %d pdlen: %d", dlen, pdlen)
 		if *unparsed < pdlen {
 			logger.Warnf(ctx, "unparsed: %d < pdlen: %d", *unparsed, pdlen)
@@ -226,11 +232,11 @@ func (th *TagHandler) unPackTagData(ctx context.Context, tagData []byte, dlen in
 		bEnd := dlen%2 + dlen
 		//v.SetString(sb[pdlen-dlen:])
 		v.SetString(strings.ToUpper(sb[bStart:bEnd]))
-
+		
 		*start += pdlen
 		*unparsed -= pdlen*/
 		return th.unpackNType(ctx, tagData, v, t, start, unparsed)
-
+	
 	case "an":
 		if *unparsed < dlen {
 			logger.Warnf(ctx, "unparsed: %d < dlen: %d", *unparsed, dlen)
@@ -252,7 +258,7 @@ func (th *TagHandler) Unpack(ctx context.Context, tagName string, tagStru interf
 	v_stru := reflect.ValueOf(tagStru).Elem()
 	count := v_stru.NumField()
 	logger.Debugf(ctx, "count: %d", count)
-
+	
 	start := 0
 	unparsed := len(tagData)
 	if unparsed < 4 {
