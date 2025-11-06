@@ -239,7 +239,7 @@ func (ph *ProtoHandler) RegisterD63Tag(ctx context.Context, tag string, pData *P
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return err
 	}
-	pData.Domain64TagKey = append(pData.Domain64TagKey, tag)
+	pData.Domain63TagKey = append(pData.Domain63TagKey, tag)
 	if pData.Domain63Tags == nil {
 		pData.Domain63Tags = make(map[string][]byte)
 	}

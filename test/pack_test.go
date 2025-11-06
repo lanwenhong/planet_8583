@@ -125,7 +125,7 @@ func TestRegisterD63Tag(t *testing.T) {
 	ph.RegisterD63Tag(ctx, "IH", pData, tagIH)
 	ph.RegisterD63Tag(ctx, "IL", pData, tagIL)
 
-	for _, k := range pData.Domain64TagKey {
+	for _, k := range pData.Domain63TagKey {
 		logger.Debugf(ctx, "tag: %s", k)
 	}
 
@@ -241,7 +241,7 @@ func TestFinancialTrasReq(t *testing.T) {
 	ph.RegisterD63Tag(ctx, "IH", pData, tagIH)
 	ph.RegisterD63Tag(ctx, "IL", pData, tagIL)
 
-	for _, k := range pData.Domain64TagKey {
+	for _, k := range pData.Domain63TagKey {
 		logger.Debugf(ctx, "tag: %s", k)
 	}
 
