@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
+	
 	"github.com/lanwenhong/lgobase/logger"
 )
 
@@ -23,7 +23,7 @@ func (ph *ProtoHandler) getTagInt(ctx context.Context, tv reflect.StructField, t
 		logger.Warnf(ctx, "err: %s", err.Error())
 	}
 	return nv, err
-
+	
 }
 
 func (ph *ProtoHandler) getTagStr(ctx context.Context, tv reflect.StructField, tagName string) (string, error) {
@@ -75,7 +75,7 @@ func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.Stru
 	slen := len(s)
 	num := slen % 2
 	logger.Debugf(ctx, "tag: %s slen: %d num: %d", tagAlign, slen, num)
-
+	
 	var tagPadding string
 	switch tagAlign {
 	case "N":
@@ -108,7 +108,7 @@ func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.Stru
 		logger.Warnf(ctx, "tagAlign: %s not support")
 		return dataBuf, NewProtocolError(ERR_TAG)
 	}
-
+	
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return totalBuf, err
@@ -126,14 +126,14 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return "", err
-
+		
 	}
-
+	
 	//变长域不参与pandding src
 	if lt != FIXEDLENGTH {
 		return s, nil
 	}
-
+	
 	paddingSrc, err := ph.getTagStr(ctx, tv, TAG_PADDINGSRC)
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
@@ -147,7 +147,7 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 	logger.Debugf(ctx, "tagAlign: %s", tagAlign)
 	paddingC, err := ph.getTagStr(ctx, tv, TAG_PADDING_C)
 	logger.Debugf(ctx, "paddingC: %s", paddingC)
-
+	
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return "", nil
@@ -161,12 +161,12 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 		}
 		return s, nil
 	}
-
+	
 	if slen > dlen {
 		logger.Warnf(ctx, "slen %d > dlen %d ", slen, dlen)
 		return "", NewProtocolError(ERR_DATA_LEN)
 	}
-
+	
 	var ts string = ""
 	var builder strings.Builder
 	switch tagAlign {
@@ -186,10 +186,10 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 		logger.Warnf(ctx, "not found tagAlign")
 		return "", NewProtocolError(ERR_TAG)
 	}
-
+	
 	logger.Debugf(ctx, "ts: %s", ts)
 	return ts, nil
-
+	
 }
 
 func (ph *ProtoHandler) packDomainStr(ctx context.Context, s string, tv reflect.StructField) ([]byte, error) {
@@ -200,20 +200,20 @@ func (ph *ProtoHandler) packDomainStr(ctx context.Context, s string, tv reflect.
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return dBuf, err
 	}
-
+	
 	vs, err := ph.needPaddingSrc(ctx, s, tv)
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return dBuf, err
 	}
-
+	
 	switch dlt {
 	case "n":
 		dBuf, err = ph.packNType(ctx, vs, tv)
 	case "an":
 		dBuf, _ = ph.packANType(ctx, vs, tv)
 	}
-
+	
 	fs := FormatByte(ctx, dBuf)
 	logger.Debugf(ctx, "format pack str: %s", fs)
 	return dBuf, nil
@@ -226,7 +226,7 @@ func (ph *ProtoHandler) packDomainSlice(ctx context.Context, s []byte, tv reflec
 	zlen, _ := ph.packLen(ctx, slen, tv)
 	b = append(b, zlen...)
 	b = append(b, s...)
-
+	
 	fs := FormatByte(ctx, b)
 	logger.Debugf(ctx, "format pack slice: %s", fs)
 	return b, nil
@@ -239,14 +239,13 @@ func (ph *ProtoHandler) RegisterD63Tag(ctx context.Context, tag string, pData *P
 		logger.Warnf(ctx, "err: %s", err.Error())
 		return err
 	}
-	pData.Domain64TagKey = append(pData.Domain64TagKey, tag)
+	pData.Domain63TagKey = append(pData.Domain63TagKey, tag)
 	if pData.Domain63Tags == nil {
 		pData.Domain63Tags = make(map[string][]byte)
 	}
 	pData.Domain63Tags[tag] = b
 	pData.Domain63 = append(pData.Domain63, b...)
 	return nil
-
 }
 
 func (ph *ProtoHandler) PackMac(ctx context.Context, mac string) error {
@@ -263,7 +262,7 @@ func (ph *ProtoHandler) PackMac(ctx context.Context, mac string) error {
 func (ph *ProtoHandler) PackStru(ctx context.Context, pData *ProtoStruct) ([]byte, error) {
 	bitmap := ph.Bit
 	bdata := []byte{}
-
+	
 	var err error
 	//pack msg type
 	if len(pData.MsgType) != 4 {

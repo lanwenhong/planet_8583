@@ -3,7 +3,7 @@ package planet_8583
 import (
 	"context"
 	"reflect"
-
+	
 	"github.com/lanwenhong/lgobase/logger"
 )
 
@@ -37,15 +37,15 @@ type ProtoStruct struct {
 	ProcessingCd             string            `bit:"3" lentype:"0" len:"6" paddingSrc:"N"  align:"N" padding:"0" dl_type:"n"` //交易处理码
 	Txamt                    string            `bit:"4" lentype:"0" len:"12" paddingSrc:"Y" align:"L" padding:"0" dl_type:"n"` //交易金额
 	Domain5                  string            `bit:"5" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain6                  string            `bit:"6" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	CardholderBilling        string            `bit:"6" lentype:"0" len:"12" paddingSrc:"Y" align:"L" padding:"0" dl_type:"n"`
 	Domain7                  string            `bit:"7" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain8                  string            `bit:"8" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain9                  string            `bit:"9" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain10                 string            `bit:"10" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	ConversionRate           string            `bit:"10" lentype:"0" len:"8" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Syssn                    string            `bit:"11" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	TimeLocalTransaction     string            `bit:"12" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	DateLocalTransaction     string            `bit:"13" lentype:"0" len:"4" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
-	CardDatetime             string            `bit:"14" lentype:"0" len:"6" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
+	CardDatetime             string            `bit:"14" lentype:"0" len:"4" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain15                 string            `bit:"15" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain16                 string            `bit:"16" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain17                 string            `bit:"17" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
@@ -82,7 +82,7 @@ type ProtoStruct struct {
 	Domain48                 string            `bit:"48" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	CurrencyCd               string            `bit:"49" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
 	Domain50                 string            `bit:"50" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain51                 string            `bit:"51" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	CurrencyCdCardholder     string            `bit:"51" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
 	Pin                      string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain53                 string            `bit:"53" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain54                 string            `bit:"54" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
@@ -91,9 +91,10 @@ type ProtoStruct struct {
 	Domain57                 string            `bit:"57" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain58                 string            `bit:"58" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain59                 string            `bit:"59" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain60                 string            `bit:"60" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	BatchNumber              []byte            `bit:"60" lentype:"2" len:"8" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain61                 string            `bit:"61" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain62                 string            `bit:"62" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	BatchTotals              []byte            `bit:"63" lentype:"2" len:"90" paddingSrc:"N" align:"N" padding:"F" dl_type:"an"`
 	Domain63                 []byte            `bit:"63" lentype:"2" len:"160" paddingSrc:"N" align:"N" padding:"0" dl_type:"b" tags:"12,IA,IB,IC,ID,IE,IF,IG,IH,IL"`
 	Domain64                 string            `bit:"64" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain63Tags             map[string][]byte //tags
