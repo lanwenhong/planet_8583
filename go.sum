@@ -18,6 +18,8 @@ github.com/lanwenhong/lgobase v1.10.9 h1:rvisyR/V9AwxCOjuEqF6dEHtYkNG/D/tBISjpeU
 github.com/lanwenhong/lgobase v1.10.9/go.mod h1:iUzn9bcvAcQq02iBKWRVg2rZ8+j1s2m9rhW7VNIKyNI=
 github.com/lanwenhong/lgobase v1.10.11 h1:ZiMDArw0iu8ViuPosjbfFwveqPuIMhfRQ+6Vn2mdM9o=
 github.com/lanwenhong/lgobase v1.10.11/go.mod h1:SMlcR4XgtfxsTKRd4mpjq0Om6riDVYg9B8a4SVtcPLY=
+github.com/lanwenhong/lgobase v1.10.12 h1:ykEo2AIyIo/isMXQ0EbsB3wuaJ6/UPdQ6JLFwLuDihA=
+github.com/lanwenhong/lgobase v1.10.12/go.mod h1:LqVvMOJH6prqPS8ycZBPEtjtTMgkp70EoIlOnBYrCTo=
 github.com/oklog/ulid v1.3.1 h1:EGfNDEx6MqHz8B3uNV6QAib1UR2Lm97sHi3ocA6ESJ4=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/rs/xid v1.5.0 h1:mKX4bl4iPYJtEIxp6CYiUuLQ/8DYMoz0PUdtGgMFRVc=

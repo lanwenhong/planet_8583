@@ -2,7 +2,7 @@ module github.com/lanwenhong/planet_8583
 
 go 1.25.0
 
-require github.com/lanwenhong/lgobase v1.10.11
+require github.com/lanwenhong/lgobase v1.10.12
 
 require (
 	github.com/chilts/sid v0.0.0-20190607042430-660e94789ec9 // indirect

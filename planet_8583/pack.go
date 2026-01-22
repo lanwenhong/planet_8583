@@ -37,7 +37,8 @@ func (ph *ProtoHandler) getTagStr(ctx context.Context, tv reflect.StructField, t
 }
 
 func (ph *ProtoHandler) packLen(ctx context.Context, slen int, tv reflect.StructField) ([]byte, error) {
-	bcd := []byte{}
+	//bcd := []byte{}
+	bcd := make([]byte, 0, 1024)
 	var err error = nil
 	lenType, err := ph.getTagInt(ctx, tv, TAG_LENTYPE)
 	if err != nil {
@@ -65,8 +66,10 @@ func (ph *ProtoHandler) packANType(ctx context.Context, s string, tv reflect.Str
 }
 
 func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.StructField) ([]byte, error) {
-	dataBuf := []byte{}
-	totalBuf := []byte{}
+	//dataBuf := []byte{}
+	dataBuf := make([]byte, 0, 1024)
+	//totalBuf := []byte{}
+	totalBuf := make([]byte, 0, 1024)
 	tagAlign, err := ph.getTagStr(ctx, tv, TAG_ALIGN)
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
@@ -81,7 +84,7 @@ func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.Stru
 	case "N":
 		dataBuf, err = hex.DecodeString(s)
 	case "L":
-		bcd := []byte{}
+		bcd := make([]byte, 0, 1024)
 		tagPadding, err = ph.getTagStr(ctx, tv, TAG_PADDING_C)
 		if err == nil {
 			for i := 0; i < num; i++ {
@@ -92,7 +95,7 @@ func (ph *ProtoHandler) packNType(ctx context.Context, s string, tv reflect.Stru
 		}
 	case "R":
 		logger.Debugf(ctx, "padding R")
-		bcd := []byte{}
+		bcd := make([]byte, 0, 1024)
 		tagPadding, err = ph.getTagStr(ctx, tv, TAG_PADDING_C)
 		logger.Debugf(ctx, "tagPadding: %s", tagPadding)
 		if err == nil {
@@ -194,7 +197,8 @@ func (ph *ProtoHandler) needPaddingSrc(ctx context.Context, s string, tv reflect
 
 func (ph *ProtoHandler) packDomainStr(ctx context.Context, s string, tv reflect.StructField) ([]byte, error) {
 	//dlt, err := ph.getDlType(ctx, tv)
-	dBuf := []byte{}
+	//dBuf := []byte{}
+	dBuf := make([]byte, 0, 1024)
 	dlt, err := ph.getTagStr(ctx, tv, TAG_DLTYPE)
 	if err != nil {
 		logger.Warnf(ctx, "err: %s", err.Error())
@@ -220,7 +224,8 @@ func (ph *ProtoHandler) packDomainStr(ctx context.Context, s string, tv reflect.
 }
 
 func (ph *ProtoHandler) packDomainSlice(ctx context.Context, s []byte, tv reflect.StructField) ([]byte, error) {
-	b := []byte{}
+	//b := []byte{}
+	b := make([]byte, 0, 1024)
 	slen := len(s)
 	logger.Debugf(ctx, "slen: %d", slen)
 	zlen, _ := ph.packLen(ctx, slen, tv)
@@ -262,7 +267,8 @@ func (ph *ProtoHandler) PackMac(ctx context.Context, mac string) error {
 
 func (ph *ProtoHandler) PackStru(ctx context.Context, pData *ProtoStruct) ([]byte, error) {
 	bitmap := ph.Bit
-	bdata := []byte{}
+	//bdata := []byte{}
+	bdata := make([]byte, 0, 1024)
 
 	var err error
 	//pack msg type
