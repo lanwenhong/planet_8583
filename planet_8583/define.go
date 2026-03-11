@@ -37,7 +37,7 @@ type ProtoStruct struct {
 	ProcessingCd             string            `bit:"3" lentype:"0" len:"6" paddingSrc:"N"  align:"N" padding:"0" dl_type:"n"` //交易处理码
 	Txamt                    string            `bit:"4" lentype:"0" len:"12" paddingSrc:"Y" align:"L" padding:"0" dl_type:"n"` //交易金额
 	Domain5                  string            `bit:"5" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain6                  string            `bit:"6" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	Domain6                  string            `bit:"6" lentype:"0" len:"12" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain7                  string            `bit:"7" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain8                  string            `bit:"8" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain9                  string            `bit:"9" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
@@ -82,7 +82,7 @@ type ProtoStruct struct {
 	Domain48                 string            `bit:"48" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	CurrencyCd               string            `bit:"49" lentype:"0" len:"3" paddingSrc:"N" align:"L" padding:"0" dl_type:"n"`
 	Domain50                 string            `bit:"50" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
-	Domain51                 string            `bit:"51" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
+	Domain51                 string            `bit:"51" lentype:"0" len:"3" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Pin                      string            `bit:"52" lentype:"0" len:"16" paddingSrc:"N" align:"N" padding:"0" dl_type:"n"`
 	Domain53                 string            `bit:"53" lentype:"0" len:"19" paddingSrc:"N" align:"N" padding:"F" dl_type:"n"`
 	Domain54                 []byte            `bit:"54" lentype:"2" len:"14" paddingSrc:"N" align:"R" padding:"0" dl_type:"b"`

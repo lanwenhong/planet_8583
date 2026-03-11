@@ -351,3 +351,19 @@ func TestUnpackFromBCD(t *testing.T) {
 	logger.Debugf(ctx, "ups: %+v", ups)
 
 }
+
+func TestUnpackAuthReversalResponse(t *testing.T) {
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	//bcd := "0430343801000a80a000000000000000000000000000000000198830140635031102263630373036373239333733373030313131313131313103440000"
+	//bcd := "0430343801000a80a000000000000000000010000000000000839981154629031102263630373036373239383736353330313131313131313103440000"
+	bcd := "0430343801000a80a000000000000000000010000000000000521436154834031102263630373036373239383834393330313131313131313103440000"
+	b, _ := hex.DecodeString(bcd)
+	logger.Infof(ctx, "len=%d", len(b))
+	uph := planet_8583.NewProtoHandler()
+	ups := &planet_8583.ProtoStruct{}
+	err := uph.Unpack(ctx, b, ups)
+	logger.Infof(ctx, "ups: %+v", ups)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
