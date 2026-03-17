@@ -143,7 +143,7 @@ type TagFA struct {
 }
 
 type Tag25 struct {
-	Len string `len:"2" idl_type:"n"` //0003
+	Len string `len:"4" idl_type:"n"` //0003
 	Tag string `len:"2" idl_type:"an"`
 	ACI string `lentype:"0" len:"1" idl_type:"an"`
 }
