@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -50,26 +51,26 @@ func GetNonZeroFields(v interface{}) map[string]string {
 	return ret
 }
 
-func Unpack(bcd string) map[string]string {
-	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
-	// 2025-11-19
-	// 200015
-	//bcd := "0210303801000e8082000000000000000001002000152136071119022635333233353836373631323235383832353630303230303030303030034400059f36020a31"
-	// 200016
-	//bcd := "0210303801000e8082000000000000000002002000162137451119022635333233353836373632303135383832353930303230303030303030034400059f36020a31"
-	// 200017
-	//bcd := "0210303801000e8082000000000000000003002000172139081119022635333233353836373632373135383832363130303230303030303030034400059f36020a31"
-	// 200018
-	//bcd := "0210303801000e8082000000000000000030102000182200141119022635333233353836373733363035383832383930303230303030303130034400059f36020a31"
-	
+func Unpack(ctx context.Context, bcd string) *planet_8583.ProtoStruct {
 	b, _ := hex.DecodeString(bcd)
 	uph := planet_8583.NewProtoHandler()
 	ups := &planet_8583.ProtoStruct{}
 	if err := uph.Unpack(ctx, b, ups); err != nil {
 		panic(err)
 	}
-	
-	return GetNonZeroFields(ups)
+	return ups
+}
+
+func UnpackWithMap(ctx context.Context, bcd string) map[string]string {
+	return GetNonZeroFields(Unpack(ctx, bcd))
+}
+
+func PrintData(ctx context.Context, datas ...*planet_8583.ProtoStruct) {
+	fmt.Println("=============================")
+	for _, data := range datas {
+		GetNonZeroFields(data)
+		fmt.Println("=============================")
+	}
 }
 
 // 获取SSL加密的TCP连接（对应原get_socket函数）
@@ -139,6 +140,34 @@ func addReqHeader(req string) []byte {
 	return data
 }
 
+func SendData(ctx context.Context, datas []string) []*planet_8583.ProtoStruct {
+	sock, err := getSocket()
+	if err != nil {
+		fmt.Printf("获取连接失败: %v\n", err)
+		os.Exit(1)
+	}
+	defer sock.Close()
+	
+	var ret []*planet_8583.ProtoStruct
+	for _, data := range datas {
+		_, err = sock.Write(addReqHeader(data))
+		if err != nil {
+			fmt.Printf("发送数据失败: %v\n", err)
+			os.Exit(1)
+		}
+		
+		buf := make([]byte, 9016)
+		n, err := sock.Read(buf)
+		if err != nil {
+			panic(err)
+		}
+		
+		recvHex := hex.EncodeToString(buf[:n])
+		ret = append(ret, Unpack(ctx, recvHex[14:]))
+	}
+	return ret
+}
+
 func GetTradeData(txamt, syssn, tid string) string {
 	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
 	ph := planet_8583.NewProtoHandler()
@@ -148,84 +177,9 @@ func GetTradeData(txamt, syssn, tid string) string {
 		MsgType:      "0200",
 		CardNo:       "4336680006896670",
 		ProcessingCd: "000000",
-		
-		// 第一笔
-		//Txamt: "200",
-		//Syssn: "200001",
-		
-		// 第二笔
-		//Txamt: "1200",
-		//Syssn: "200002",
-		
-		// 第三笔
-		//Txamt: "2400",
-		//Syssn: "200003",
-		
-		// 第四笔
-		//Txamt: "1900",
-		//Syssn: "200004",
-		//Tid:   "20000000",
-		
-		// 第六笔
-		//Txamt: "1910",
-		//Syssn: "200005",
-		//Tid:   "20000001",
-		
-		//Txamt: "90",
-		//Syssn: "200006",
-		//Tid:   "20000001",
-		
-		// 第7笔
-		//Txamt: "9910",
-		//Syssn: "200005",
-		//Tid:   "20000002",
-		
-		// 2025-11-16
-		// 第8笔
-		//Txamt: "110",
-		//Syssn: "200007",
-		//Tid:   "20000000",
-		// 第9笔
-		//Txamt: "110",
-		//Syssn: "200008",
-		//Tid:   "20000000",
-		// 第10笔
-		//Txamt: "100",
-		//Syssn: "200009",
-		//Tid:   "20000001",
-		// 第11笔
-		//Txamt: "100",
-		//Syssn: "200009",
-		//Tid:   "20000002",
-		// 12
-		//Txamt: "100",
-		//Syssn: "200012",
-		//Tid:   "20000003",
-		// 13
-		//Txamt: "100",
-		//Syssn: "200013",
-		//Tid:   "20000004",
-		// 14
-		//Txamt: "100",
-		//Syssn: "200014",
-		//Tid:   "20000005",
-		
-		// 2025-11-19
-		//Txamt: "100",
-		//Syssn: "200015",
-		//Tid:   "20000000",
-		
-		//Txamt: "200",
-		//Syssn: "200016",
-		//Tid:   "20000000",
-		
-		//Txamt: "300",
-		//Syssn: "200017",
-		//Tid:   "20000000",
-		
-		Txamt: txamt,
-		Syssn: syssn,
-		Tid:   tid,
+		Txamt:        txamt,
+		Syssn:        syssn,
+		Tid:          tid,
 		
 		PosEntryMode:         "021",
 		NetId:                "226",
@@ -297,10 +251,9 @@ func GetTradeData(txamt, syssn, tid string) string {
 func GetSettleData(syssn, tid string, batchTotals []byte) string {
 	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
 	ph := planet_8583.NewProtoHandler()
-	
 	pData := &planet_8583.ProtoStruct{
 		MsgType:      "0500",
-		ProcessingCd: "960000",
+		ProcessingCd: "920000",
 		Syssn:        syssn,
 		NetId:        "226",
 		Tid:          tid,
@@ -323,121 +276,289 @@ func GetSettleData(syssn, tid string, batchTotals []byte) string {
 }
 
 func TestTrade(t *testing.T) {
-	sock, err := getSocket()
-	if err != nil {
-		fmt.Printf("获取连接失败: %v\n", err)
-		os.Exit(1)
+	ctx := context.Background()
+	datas := []string{
+		//GetTradeData("50", "200028", "20000012"),
+		//GetTradeData("51", "200029", "20000012"),
+		//GetTradeData("52", "200030", "20000012"),
+		//GetTradeData("61", "200031", "20000012"),
+		//GetTradeData("62", "200032", "20000012"),
+		//GetTradeData("63", "200033", "20000012"),
+		GetTradeData("60", "200034", "20000012"),
+		GetTradeData("61", "200035", "20000012"),
+		GetTradeData("62", "200036", "20000012"),
+		GetTradeData("63", "200037", "20000012"),
 	}
-	defer sock.Close() // 确保连接最终关闭
-	
-	datas := [][3]string{
-		// 20251119
-		//{"3010", "200018", "20000010"},
-		//{"2010", "200019", "20000010"},
-		//{"2010", "200020", "20000010"},
-		//{"1010", "200021", "20000010"},
-		
-		// 20251120
-		{"10", "200022", "20000011"},
-		{"10", "200023", "20000011"},
-		{"10", "200024", "20000011"},
-	}
-	
-	var allData []map[string]string
-	for _, data := range datas {
-		// 4. 发送报文（对应Python的sock.send）
-		_, err = sock.Write(addReqHeader(GetTradeData(data[0], data[1], data[2])))
-		if err != nil {
-			fmt.Printf("发送数据失败: %v\n", err)
-			os.Exit(1)
-		}
-		
-		// 5. 接收响应（对应Python的sock.recv().hex()）
-		// 注意：Go的recv需要指定缓冲区大小，根据实际场景调整（示例用4096）
-		buf := make([]byte, 9016)
-		n, err := sock.Read(buf)
-		if err != nil {
-			panic(err)
-		}
-		// 只取实际接收到的字节数，转十六进制字符串
-		recvHex := hex.EncodeToString(buf[:n])
-		fmt.Printf("收到响应: %s\n", recvHex[14:])
-		tmp := Unpack(recvHex[14:])
-		fmt.Printf("收到响应: %s\n", tmp)
-		tmp["txamt"] = data[0]
-		tmp["syssn"] = data[1]
-		tmp["tid"] = data[2]
-		allData = append(allData, tmp)
-	}
-	
-	for _, data := range allData {
-		for k, v := range data {
-			fmt.Printf("%s: %s\n", k, v)
-		}
-	}
+	PrintData(ctx, SendData(ctx, datas)...)
 }
 
-func TestTrade2(t *testing.T) {
-	bcds := []string{
-		"0210303801000e8082000000000000000001002000152136071119022635333233353836373631323235383832353630303230303030303030034400059f36020a31",
-		"0210303801000e8082000000000000000002002000162137451119022635333233353836373632303135383832353930303230303030303030034400059f36020a31",
-		"0210303801000e8082000000000000000003002000172139081119022635333233353836373632373135383832363130303230303030303030034400059f36020a31",
-		"0210303801000e8082000000000000000030102000182200141119022635333233353836373733363035383832383930303230303030303130034400059f36020a31",
+func TestAuthTrade(t *testing.T) {
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	ph := planet_8583.NewProtoHandler()
+	iccdata := "9F2608BB4FD0027DF6D4EC9F2701809F100706010A03A000009F37045AED67039F36020A31950580C00000009A032510279C01009F02060000000001005F2A02034482021C009F1A0203449F3303E028C89F34031E03009F3501228407A00000000310109F0902008C9F1E0843415357383332309F0306000000000000"
+	biccdata, _ := hex.DecodeString(iccdata)
+	pData := &planet_8583.ProtoStruct{
+		MsgType:              "0100",
+		CardNo:               "4336680006896670",
+		ProcessingCd:         "000000",
+		Txamt:                "666",
+		Syssn:                "200002",
+		PosEntryMode:         "005",
+		Cardsequencenumber:   "001",
+		NetId:                "226",
+		PosCondCd:            "00",
+		ICCSystemRelatedData: biccdata,
+		TrackData2:           "4336680006896670D22022011193265100000",
+		Tid:                  "11111111",
+		MchntId:              "188000344333",
+		CurrencyCd:           "344",
+	}
+	pData.Domain63Tags = make(map[string][]byte)
+	
+	// FA M
+	_ = ph.RegisterD63Tag(ctx, "FA", pData, &planet_8583.TagFA{
+		Len: "0003", Tag: "FA", FinalAuthIndicator: "P",
+	})
+	
+	if _, err := ph.PackStru(ctx, pData); err != nil {
+		t.Fatal(err)
+	}
+	if err := ph.PackMac(ctx, "BBEFB74400000000"); err != nil {
+		t.Fatal(err)
+	}
+	ph.Pack(ctx)
+	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
+	logger.Debugf(ctx, "bcd: %s", fs)
+	
+	PrintData(ctx, SendData(ctx, []string{fs})...)
+}
+
+func TestAuthTradeConfirm(t *testing.T) {
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	ph := planet_8583.NewProtoHandler()
+	iccdata := "9F2608BB4FD0027DF6D4EC9F2701809F100706010A03A000009F37045AED67039F36020A31950580C00000009A032510279C01009F02060000000001005F2A02034482021C009F1A0203449F3303E028C89F34031E03009F3501228407A00000000310109F0902008C9F1E0843415357383332309F0306000000000000"
+	biccdata, _ := hex.DecodeString(iccdata)
+	pData := &planet_8583.ProtoStruct{
+		MsgType:                  "0120",
+		CardNo:                   "4336680006896670",
+		ProcessingCd:             "020000",
+		Txamt:                    "666",
+		Syssn:                    "200010",
+		TimeLocalTransaction:     time.Now().Format("150405"),
+		DateLocalTransaction:     time.Now().Format("0102"),
+		CardDatetime:             "9912",
+		PosEntryMode:             "005",
+		NetId:                    "226",
+		PosCondCd:                "06",
+		RetrievalReferenceNumber: "606166537543",
+		AuthorizationIDResponse:  "735746",
+		Tid:                      "11111111",
+		MchntId:                  "188000344333",
+		CurrencyCd:               "344",
+		TrackData2:               "4336680006896670D22022011193265100000",
+		ICCSystemRelatedData:     biccdata,
+	}
+	pData.Domain63Tags = make(map[string][]byte)
+	
+	// TC M
+	_ = ph.RegisterD63Tag(ctx, "TC", pData, &planet_8583.TagTC{
+		Len: "0003", Tag: "TC", TerminalEntryCapabilities: "5",
+	})
+	
+	if _, err := ph.PackStru(ctx, pData); err != nil {
+		t.Fatal(err)
+	}
+	if err := ph.PackMac(ctx, "BBEFB74400000000"); err != nil {
+		t.Fatal(err)
+	}
+	ph.Pack(ctx)
+	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
+	logger.Debugf(ctx, "bcd: %s", fs)
+	
+	PrintData(ctx, SendData(ctx, []string{fs})...)
+}
+
+func GetBatchUploadData(txamt, syssn, rrn, tid string) string {
+	//
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	ph := planet_8583.NewProtoHandler()
+	pData := &planet_8583.ProtoStruct{
+		MsgType: "0320",
+		// 2
+		CardNo: "4336680006896670",
+		// 3
+		ProcessingCd: "000000",
+		// 4
+		Txamt: txamt,
+		// 11
+		Syssn: syssn,
+		// 12
+		TimeLocalTransaction: time.Now().Format("150405"),
+		// 13
+		DateLocalTransaction: time.Now().Format("0102"),
+		// 14
+		CardDatetime: "3012",
+		// 22
+		PosEntryMode: "021",
+		// 24
+		NetId: "226",
+		// 25
+		PosCondCd: "00",
+		// 37
+		RetrievalReferenceNumber: rrn,
+		// 39
+		ResponseCode: "00",
+		// 41
+		Tid: tid,
+		// 42
+		MchntId: "188000344333",
+		// 49
+		CurrencyCd: "344",
+		// 55
+	}
+	if _, err := ph.PackStru(ctx, pData); err != nil {
+	}
+	if err := ph.PackMac(ctx, "BBEFB74400000000"); err != nil {
+		panic("error")
+	}
+	ph.Pack(ctx)
+	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
+	logger.Debugf(ctx, "bcd: %s", fs)
+	return fs
+}
+
+func GetBatchUploadData1(txamt, syssn, rrn, tid, cardNo, txTime, txDate, expireDate, posEntryMode, authCode, iccdata string) string {
+	// 需要
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	ph := planet_8583.NewProtoHandler()
+	pData := &planet_8583.ProtoStruct{
+		MsgType: "0320",
+		// 2
+		CardNo: cardNo,
+		// 3
+		ProcessingCd: "000000",
+		// 4
+		Txamt: txamt,
+		// 11
+		Syssn: syssn,
+		// 12
+		TimeLocalTransaction: txTime,
+		// 13
+		DateLocalTransaction: txDate,
+		// 14
+		CardDatetime: expireDate,
+		// 22
+		PosEntryMode: posEntryMode,
+		// 24
+		NetId: "226",
+		// 25
+		PosCondCd: "00",
+		// 37
+		RetrievalReferenceNumber: rrn,
+		// 38
+		AuthorizationIDResponse: "",
+		// 39
+		ResponseCode: "00",
+		// 41
+		Tid: tid,
+		// 42
+		MchntId: "188000344333",
+		// 49
+		CurrencyCd: "344",
 	}
 	
-	datas := []map[string]string{}
-	for _, bcd := range bcds {
-		datas = append(datas, Unpack(bcd))
+	if iccdata != "" {
+		pData.ICCSystemRelatedData, _ = hex.DecodeString(iccdata)
 	}
 	
-	for _, data := range datas {
-		for k, v := range data {
-			fmt.Printf("%s: %s\n", k, v)
-		}
-		fmt.Println("")
+	if authCode != "" {
+		pData.AuthorizationIDResponse = authCode
 	}
+	
+	if _, err := ph.PackStru(ctx, pData); err != nil {
+	}
+	if err := ph.PackMac(ctx, "BBEFB74400000000"); err != nil {
+		panic("error")
+	}
+	ph.Pack(ctx)
+	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
+	logger.Debugf(ctx, "bcd: %s", fs)
+	return fs
+}
+
+func GetSettleUploadData(syssn, tid string, batchTotals []byte) string {
+	ctx := context.WithValue(context.Background(), "trace_id", util.GenXid())
+	ph := planet_8583.NewProtoHandler()
+	pData := &planet_8583.ProtoStruct{
+		MsgType:      "0500",
+		ProcessingCd: "960000",
+		Syssn:        syssn,
+		NetId:        "226",
+		Tid:          tid,
+		MchntId:      "188000344333",
+		BatchNumber:  []byte(syssn),
+		BatchTotals:  batchTotals,
+	}
+	pData.Domain63Tags = make(map[string][]byte)
+	if _, err := ph.PackStru(ctx, pData); err != nil {
+		panic(err)
+	}
+	if err := ph.PackMac(ctx, "BBEFB74400000000"); err != nil {
+		panic(err)
+	}
+	ph.Pack(ctx)
+	fs := planet_8583.FormatByte(ctx, ph.Tbuf)
+	logger.Debugf(ctx, "bcd: %s", fs)
+	return fs
+}
+
+func GenSyssn(ctx context.Context) string {
+	timestamp := time.Now().Unix()
+	tsStr := strconv.FormatInt(timestamp, 10)
+	last8Str := tsStr
+	if len(tsStr) > 8 {
+		last8Str = tsStr[len(tsStr)-8:] // 长度>8，取后8位
+	}
+	return fmt.Sprintf("%08s", last8Str)
+}
+
+func Settle(ctx context.Context, tid string, txcnt, txamt, refundcnt, refundamt, timeoutCnt, adjustcnt int) {
+	syssn := GenSyssn(ctx)
+	datas := []string{
+		GetSettleData(syssn, tid, NewD63BatchTotals(txcnt, txamt, refundcnt, refundamt, timeoutCnt, adjustcnt)),
+	}
+	PrintData(ctx, SendData(ctx, datas)...)
+}
+
+func Clear(ctx context.Context, tid string) {
+	syssn := GenSyssn(ctx)
+	datas := []string{
+		GetSettleData(syssn, tid, NewD63BatchTotals(0, 0, 0, 0, 0, 0)),
+		GetSettleUploadData(syssn, tid, NewD63BatchTotals(0, 0, 0, 0, 0, 0)),
+	}
+	PrintData(ctx, SendData(ctx, datas)...)
 }
 
 func TestSettle(t *testing.T) {
-	settleData := []string{
-		//GetSettleData("400014", "20000010", NewD63BatchTotals(4, 8040, 0, 0, 0, 0)),
-		//GetSettleData("400017", "20000000", NewD63BatchTotals(4, 700, 0, 0, 0, 0)),
-		//GetSettleData("400018", "20000011", NewD63BatchTotals(3, 30, 0, 0, 0, 0)),
-		GetSettleData("400019", "20000000", NewD63BatchTotals(4, 700, 0, 0, 0, 0)),
+	ctx := context.Background()
+	datas := []string{
+		//GetTradeData("60", "200038", "20000012"),
+		//GetTradeData("60", "200039", "20000012"),
+		//GetTradeData("60", "200040", "20000012"),
+		//GetSettleData("400044", "87654321", NewD63BatchTotals(11, 3436000, 0, 0, 1, 0)),
+		GetSettleData("100012", "99998888", NewD63BatchTotals(1, 300500, 0, 0, 0, 1)),
+		//GetSettleData("100007", "99998888", NewD63BatchTotals(0, 0, 0, 0, 0, 0)),
+		GetSettleUploadData("100007", "99998888", NewD63BatchTotals(0, 0, 0, 0, 0, 0)),
+		GetBatchUploadData1(
+			"155000", "001284", "607567767946",
+			"87654321", "4514617557672096",
+			"150429", "0316",
+			"2902",
+			"072",
+			"752224",
+			"9F26084D6B62E6AB3B5AD09F2701809F100706011203A000009F3704A4B4BADE9F360202D5950500000000009A032603169C01009F02060000001550005F2A020344820220209F1A0203449F3303E0B8C89F3501228407A00000000310109F0902008C9F6E04207000009B0200009F34031E03009F1E0843415338303136329F03060000000000005F340101",
+		),
+		GetSettleUploadData("400038", "87654321", NewD63BatchTotals(0, 0, 0, 0, 0, 0)),
 	}
-	
-	sock, err := getSocket()
-	if err != nil {
-		fmt.Printf("获取连接失败: %v\n", err)
-		os.Exit(1)
-	}
-	defer sock.Close()
-	
-	var allData []map[string]string
-	for _, data := range settleData {
-		_, err = sock.Write(addReqHeader(data))
-		if err != nil {
-			fmt.Printf("发送数据失败: %v\n", err)
-			os.Exit(1)
-		}
-		
-		buf := make([]byte, 9016)
-		n, err := sock.Read(buf)
-		if err != nil {
-			panic(err)
-		}
-		
-		recvHex := hex.EncodeToString(buf[:n])
-		fmt.Printf("收到响应: %s\n", recvHex[14:])
-		tmp := Unpack(recvHex[14:])
-		allData = append(allData, tmp)
-	}
-	
-	for _, data := range allData {
-		for k, v := range data {
-			fmt.Printf("%s: %s\n", k, v)
-		}
-		fmt.Println("")
-		fmt.Println("")
-	}
+	PrintData(ctx, SendData(ctx, datas)...)
 }
