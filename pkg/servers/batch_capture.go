@@ -64,7 +64,7 @@ func RunBatchCapture(ctx context.Context, dateStr string) {
 
 func BatchMGet(ctx context.Context, rdb redis.Cmdable, s ...string) map[string]string {
 	batchNum := 1000
-	var res map[string]string
+	res := map[string]string{}
 	for i := 0; i < len(s); i += batchNum {
 		j := i + batchNum
 		if j > len(s) {
@@ -129,7 +129,7 @@ func processCapture(ctx context.Context, capture *models.CaptureData) error {
 			var syssns []string
 			for _, record := range capture.Records {
 				syssns = append(syssns, record.Syssn)
-				sruntime.Gsvr.Rd.Set(ctx, "pp:cpauted:"+record.Syssn, "1", time.Hour*48)
+				sruntime.Gsvr.Rd.Set(ctx, "pp:captured:"+record.Syssn, "1", time.Hour*48)
 			}
 			repo.RecordRepo.UpdateLastEvent(ctx, syssns, constant.ExtEventCaptured)
 		})
