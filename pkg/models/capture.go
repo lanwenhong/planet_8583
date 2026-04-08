@@ -128,3 +128,10 @@ func (c *CaptureData) String() string {
 		c.TotalTxCnt, c.TotalTxAmt, c.TotalRefundCnt, c.TotalRefundAmt,
 	)
 }
+
+func (r *CaptureRecord) String() string {
+	return fmt.Sprintf(
+		"[%s:%s] syssn=%s clisn=%s tid=%s txamt=%d card_no=%s tx_time=%s tx_date=%s expire_date=%s pos_entry_mode=%s auth_code=%s icc_data=%s rrn=%s type=%s txcurrcd=%s",
+		r.MchntId, r.Tid, r.Syssn, r.Clisn, r.Tid, r.TxAmt, r.CardNo, r.TxTime, r.TxDate, r.ExpireDate, r.PosEntryMode, r.AuthCode, r.ICCData, r.RRN, r.Type, r.Txcurrcd,
+	)
+}

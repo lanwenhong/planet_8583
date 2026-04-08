@@ -100,6 +100,9 @@ func GetBatchUploadData(ctx context.Context, record *models.CaptureRecord) strin
 		MchntId:                  record.MchntId,
 		CurrencyCd:               record.Txcurrcd,
 	}
+	if record.Type == "refund" {
+		pData.ProcessingCd = "200000"
+	}
 	if record.ICCData != "" {
 		pData.ICCSystemRelatedData, _ = hex.DecodeString(record.ICCData)
 	}
@@ -107,14 +110,6 @@ func GetBatchUploadData(ctx context.Context, record *models.CaptureRecord) strin
 		pData.AuthorizationIDResponse = record.AuthCode
 	}
 	return ProtoToString(ctx, pData)
-}
-
-func GetUploadDataByCaptureData(ctx context.Context, captureData *models.CaptureData) []string {
-	var ret []string
-	for _, record := range captureData.Records {
-		ret = append(ret, GetBatchUploadData(ctx, record))
-	}
-	return ret
 }
 
 func GetSettleUploadData(ctx context.Context, captureData *models.CaptureData) string {
@@ -152,9 +147,12 @@ func Settle(ctx context.Context, captureData *models.CaptureData) {
 	
 	// 批量清算
 	logger.Infof(ctx, "[%s]upload", captureData)
-	for _, uploadData := range GetUploadDataByCaptureData(ctx, captureData) {
+	for _, record := range captureData.Records {
+		uploadData := GetBatchUploadData(ctx, record)
+		logger.Infof(ctx, "[%s]开始upload", record)
 		for i := 0; ; i++ {
 			if uploadResp := SendData(ctx, sock, uploadData); uploadResp != nil && uploadResp.ResponseCode == "00" {
+				logger.Infof(ctx, "[%s]upload success", record)
 				break
 			}
 			utils.MustTrue(i < 3, errors.New("清算失败"))
@@ -164,6 +162,10 @@ func Settle(ctx context.Context, captureData *models.CaptureData) {
 	// batch upload
 	logger.Infof(ctx, "[%s]batch upload", captureData)
 	if resp := SendData(ctx, sock, GetSettleUploadData(ctx, captureData)); resp == nil || resp.ResponseCode != "00" {
-		panic(errors.New("清算失败"))
+		msg := "清算失败"
+		if resp != nil {
+			msg += ", responseCode=" + resp.ResponseCode
+		}
+		panic(errors.New(msg))
 	}
 }
