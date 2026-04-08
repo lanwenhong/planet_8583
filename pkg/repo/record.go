@@ -7,7 +7,6 @@ import (
 	
 	"github.com/elliotchance/pie/v2"
 	"github.com/lanwenhong/planet_8583/pkg/config"
-	"github.com/lanwenhong/planet_8583/pkg/constant"
 	"github.com/lanwenhong/planet_8583/pkg/models"
 	"github.com/lanwenhong/planet_8583/pkg/sruntime"
 	"github.com/lanwenhong/planet_8583/pkg/utils"
@@ -37,11 +36,10 @@ func (r *RecordDBImpl) GetRequireCaptureRecords(ctx context.Context, date time.T
 	utils.MustNil(sruntime.Gsvr.Dbs.OrmPools["qf_trade"].
 		WithContext(ctx).
 		Table(fmt.Sprintf("%s as r", recordTable)).
-		Select("r.userid, r.chnluserid,r.retcd, r.status,r.cancel, r.busicd, r.chnlid, r.chnlsn, r.clisn, r.txamt,r.chnltermid, r.txcurrcd, r.syssn, r.ext").
-		Joins(fmt.Sprintf("INNER JOIN %s as ext ON ext.syssn = r.syssn", extTable)).
+		Select("ext.cardlastevent, r.userid, r.chnluserid,r.retcd, r.status,r.cancel, r.busicd, r.chnlid, r.chnlsn, r.clisn, r.txamt,r.chnltermid, r.txcurrcd, r.syssn, r.ext").
+		Joins(fmt.Sprintf("LEFT JOIN %s as ext ON ext.syssn = r.syssn", extTable)).
 		Where("busicd in ?", r.Busicds).
 		Where("r.status = 1 AND r.retcd = '0000' AND cancel in (0, 3, 5)").
-		Where("ext.cardlastevent != ?", constant.ExtEventCaptured).
 		Where("r.chnlid = ?", config.Conf.CaptureChannelID).
 		Where("r.sysdtm >= ? AND r.sysdtm < ?", startTime, endTime).
 		Find(&ret).Error)

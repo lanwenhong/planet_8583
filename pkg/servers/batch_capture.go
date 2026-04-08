@@ -83,12 +83,12 @@ func BatchMGet(ctx context.Context, rdb redis.Cmdable, s ...string) map[string]s
 func FilterCapturedRecord(ctx context.Context, records []*models.RecordPO) []*models.RecordPO {
 	var flags []string
 	for _, record := range records {
-		flags = append(flags, "pp:cpauted:"+record.Syssn)
+		flags = append(flags, "pp:captured:"+record.Syssn)
 	}
 	flagMap := BatchMGet(ctx, sruntime.Gsvr.Rd, flags...)
 	return pie.Filter(records, func(record *models.RecordPO) bool {
-		_, ok := flagMap["pp:cpauted:"+record.Syssn]
-		return !ok
+		_, ok := flagMap["pp:captured:"+record.Syssn]
+		return !ok && (record.CardLastEvent != constant.ExtEventCaptured)
 	})
 }
 

@@ -20,6 +20,8 @@ type RecordPO struct {
 	Retcd      string     `json:"retcd" gorm:"column:retcd;type:varchar(4);"`
 	Status     int16      `json:"status" gorm:"column:status;"`
 	Cancel     int16      `json:"cancel" gorm:"column:cancel;"`
+	
+	CardLastEvent string `json:"cardlastevent" gorm:"column:cardlastevent;"`
 }
 
 type RecordExt struct {
